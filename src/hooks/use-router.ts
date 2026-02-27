@@ -1,6 +1,6 @@
 import {createContext, useCallback, useContext, useState} from 'react';
-import {Animated} from 'react-native';
 import {Sheets, ActionSheetRef} from '../types';
+import {SharedValue, withTiming} from 'react-native-reanimated';
 
 export type RouteDefinition<T extends {} = {}> = T;
 
@@ -83,27 +83,24 @@ export const useRouter = ({
   getRef?: () => ActionSheetRef;
   onNavigate?: (route: string) => void;
   onNavigateBack?: (route: string) => void;
-  routeOpacity: Animated.Value;
+  routeOpacity: SharedValue<number>;
 }): Router => {
   const [stack, setStack] = useState<Route[]>([]);
   const currentRoute: Route | undefined = stack?.[stack.length - 1];
 
   const animate = useCallback(
-    (snap = 0, opacity = 0, delay = 0) => {
+    (snap = 0, opacity = 0, _delay = 0) => {
       getRef?.().snapToRelativeOffset(snap);
-      Animated.timing(routeOpacity, {
-        toValue: opacity,
+      routeOpacity.value = withTiming(opacity, {
         duration: 150,
-        useNativeDriver: true,
-        delay: delay,
-      }).start();
+      });
     },
     [getRef, routeOpacity],
   );
 
   const navigate = useCallback(
     (name: string, params?: any, snap?: number) => {
-      animate(snap || 20, 0);
+      animate(snap || -4, 0);
       setTimeout(() => {
         setStack((state: any) => {
           const next = routes?.find(route => route.name === name);
@@ -120,9 +117,9 @@ export const useRouter = ({
             return [...nextStack, {...next, params: params || next.params}];
           }
           onNavigate?.(next.name);
-          animate(0, 1, 150);
           return [...state, {...next, params: params || next.params}];
         });
+        setTimeout(() => animate(0, 1, 150));
       }, 100);
     },
     [animate, routes, onNavigate],
@@ -138,22 +135,18 @@ export const useRouter = ({
     } else {
       setStack([routes[0]]);
     }
-    Animated.timing(routeOpacity, {
-      toValue: 1,
+    routeOpacity.value = withTiming(1, {
       duration: 150,
-      useNativeDriver: true,
-    }).start();
+    });
   };
 
   const goBack = (name?: string, snap?: number) => {
-    getRef?.().snapToRelativeOffset(snap || -10);
-    animate(snap || -10, 0);
+    animate(snap || -4, 0);
     setTimeout(() => {
       setStack(state => {
         const next = routes?.find(route => route.name === name);
         if (state.length === 1) {
           close();
-          animate(0, 1);
           return state;
         }
 
@@ -162,7 +155,6 @@ export const useRouter = ({
           nextStack.pop();
           if (currentRoute) {
             onNavigateBack?.(nextStack[nextStack.length - 1]?.name);
-            animate(0, 1, 150);
           }
           return nextStack;
         }
@@ -171,13 +163,13 @@ export const useRouter = ({
           const nextStack = [...state];
           nextStack.splice(currentIndex);
           onNavigateBack?.(nextStack[nextStack.length - 1]?.name);
-          animate(0, 1, 150);
           return [...nextStack, next];
         }
-        animate(0, 1, 150);
+        
         onNavigateBack?.(next.name);
         return [...stack, next];
       });
+      setTimeout(() => animate(0, 1, 150));
     }, 100);
   };
 
@@ -228,7 +220,10 @@ export function useSheetRouteParams<
   SheetId extends keyof Sheets = never,
   RouteKey extends keyof Sheets[SheetId]['routes'] = never,
   //@ts-ignore
->(id?: SheetId | (string & {}), routeKey?: RouteKey | (string & {})): Sheets[SheetId]['routes'][RouteKey] {
+>(
+  _id?: SheetId | (string & {}),
+  _routeKey?: RouteKey | (string & {}),
+): Sheets[SheetId]['routes'][RouteKey] {
   const context = useContext(RouterParamsContext);
   return context;
 }

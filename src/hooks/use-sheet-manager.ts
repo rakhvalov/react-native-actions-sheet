@@ -1,5 +1,5 @@
 /* eslint-disable curly */
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {actionSheetEventManager} from '../eventmanager';
 import {useProviderContext} from '../provider';
 
@@ -11,28 +11,31 @@ const useSheetManager = ({
 }: {
   id?: string;
   onHide: (data?: any) => void;
-  onBeforeShow?: (data?: any) => void;
+  onBeforeShow?: (data?: any, snapIndex?: number) => void;
   onContextUpdate: () => void;
 }) => {
   const [visible, setVisible] = useState(false);
   const currentContext = useProviderContext();
-
+  const visibleRef = useRef({
+    value: visible,
+  });
+  visibleRef.current.value = visible;
   useEffect(() => {
     if (!id) return undefined;
 
     const subscriptions = [
       actionSheetEventManager.subscribe(
         `show_${id}`,
-        (data: any, context?: string) => {
+        (data: any, context?: string, snapIndex?: number) => {
           if (currentContext !== context) return;
           if (visible) return;
           onContextUpdate?.();
-          onBeforeShow?.(data);
+          onBeforeShow?.(data, snapIndex);
           setVisible(true);
         },
       ),
       actionSheetEventManager.subscribe(`hide_${id}`, (data: any, context) => {
-        if (currentContext !== context) return;
+        if (context && currentContext !== context) return;
         onHide?.(data);
       }),
     ];
@@ -44,6 +47,7 @@ const useSheetManager = ({
   return {
     visible,
     setVisible,
+    visibleRef: visibleRef,
   };
 };
 

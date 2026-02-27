@@ -1,22 +1,52 @@
 import React from 'react';
 import {Text} from 'react-native';
-import ActionSheet from 'react-native-actions-sheet';
+import ActionSheet, { SheetManager, useProviderContext } from 'react-native-actions-sheet';
 
 function Hello() {
   return (
     <ActionSheet
       containerStyle={{
-        paddingHorizontal: 12,
-        height: 400,
+        height: '40%',
         alignItems: 'center',
         justifyContent: 'center',
       }}>
       <Text
+        onPress={() => {
+          SheetManager.show("hello_two");
+        }}
         style={{
           color: 'black',
           fontSize: 30,
         }}>
         Hello!
+      </Text>
+    </ActionSheet>
+  );
+}
+
+export function Hello_Two() {
+  const context = useProviderContext();
+
+  console.log(context);
+  return (
+    <ActionSheet
+      containerStyle={{
+        height: '40%',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+      <Text
+        onPress={() => {
+          SheetManager.hide("hello_two");
+          // setTimeout(() => {
+          //   SheetManager.hide("hello");
+          // }, 2000);
+        }}
+        style={{
+          color: 'black',
+          fontSize: 30,
+        }}>
+        Hello World!
       </Text>
     </ActionSheet>
   );

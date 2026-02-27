@@ -2,10 +2,10 @@ import { Callout } from "nextra-theme-docs";
 
 # Basic usage
 
-Import `ActionSheet`.
+Import `ActionSheet` in your project.
 
 ```tsx
-import ActionSheet from "react-native-actions-sheet";
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 ```
 
 Then create your ActionSheet inside any component and attach a `ref` to it.
@@ -15,7 +15,7 @@ function App() {
   const actionSheetRef = useRef<ActionSheetRef>(null);
 
   return (
-    <ActionSheet ref={actionSheetRef}>
+    <ActionSheet gestureEnabled ref={actionSheetRef}>
       <Text>Hi, I am here.</Text>
     </ActionSheet>
   );
@@ -37,7 +37,7 @@ actionSheetRef.current?.hide();
 <Callout
   type="warning"
 >
-  While the above is fully functional it's not scalable when you have many
-  ActionSheets in the app, it is recommended that you implement ActionSheets in
+  While the above is fully functional, it is not scalable when you have many
+  ActionSheets in the app. It is recommended that you implement ActionSheets in
   your app using [Sheet Manager](/guides/sheetmanager) for more scalability.
 </Callout>

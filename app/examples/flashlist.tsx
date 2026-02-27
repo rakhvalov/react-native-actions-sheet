@@ -1,9 +1,11 @@
 import React, {useCallback} from 'react';
 import {Text, View} from 'react-native';
-import ActionSheet from 'react-native-actions-sheet';
-import {FlashList} from 'react-native-actions-sheet/dist/src/views/FlashList';
+import ActionSheet, {ScrollView, useSheetRef} from 'react-native-actions-sheet';
+import {FlashList} from '@shopify/flash-list';
+import {Button} from '../components/button';
 
 function FlashListSheet() {
+  const ref = useSheetRef();
   const vegetableNamesWithEmoji = [
     '🍅 Tomato',
     '🥕 Carrot',
@@ -88,20 +90,20 @@ function FlashListSheet() {
     [],
   );
   return (
-    <ActionSheet
-      gestureEnabled
-      >
+    <ActionSheet gestureEnabled>
       <View
         style={{
           paddingHorizontal: 12,
-          height: 400,
           paddingTop: 20,
           gap: 10,
           width: '100%',
+          maxHeight: '100%',
+          // FlashList needs some fixed height here
+          height: '100%',
         }}>
         <FlashList
           data={vegetableNamesWithEmoji}
-          estimatedItemSize={40}
+          renderScrollComponent={ScrollView}
           ListHeaderComponent={
             <Text
               style={{
@@ -114,6 +116,12 @@ function FlashListSheet() {
             </Text>
           }
           renderItem={renderItem}
+        />
+        <Button
+          title="Close"
+          onPress={() => {
+            ref.current.hide();
+          }}
         />
       </View>
     </ActionSheet>
